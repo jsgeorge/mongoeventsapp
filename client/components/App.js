@@ -1,11 +1,40 @@
-import React, { Component } from "react";
+import React from "react";
+import { BrowserRouter } from "react-router-dom";
+import { Provider } from "react-redux";
+import thunk from "redux-thunk";
+import { createStore, applyMiddleware, compose } from "redux";
+import Reducers from "../reducers";
+import setAuthorizationToken from "../utils/setAuthorizationToken";
+//import jwt from "jwt-simple";
+import jwtDecode from "jwt-decode";
+import jwt from "jsonwebtoken";
+import { setCurrentUser } from "../actions/authActions";
+import Header from "./header";
+import Routes from "../routes";
 
-class App extends Component {
+const store = createStore(
+  Reducers,
+  compose(
+    applyMiddleware(thunk),
+    window.devToolsExtension ? window.devToolsExtension() : f => f
+  )
+);
+
+if (localStorage.jwtToken) {
+  setAuthorizationToken(localStorage.jwtToken);
+  store.dispatch(setCurrentUser(jwtDecode(localStorage.jwtToken)));
+}
+class App extends React.Component {
   render() {
     return (
-      <div>
-        <h2>Hello from react!</h2>
-      </div>
+      <Provider store={store}>
+        <BrowserRouter>
+          <Header />
+          <div className="container">
+            <Routes />
+          </div>
+        </BrowserRouter>
+      </Provider>
     );
   }
 }
